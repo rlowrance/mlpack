@@ -1,6 +1,8 @@
 # test all modules
 python Record.py
 python check_gradient.py
+python dataset_outliers.py
+python dataset_sparse.py
 python features.py
 python learning_rate.py
 python line_search.py
