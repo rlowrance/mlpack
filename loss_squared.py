@@ -1,5 +1,4 @@
 '''module for squared loss'''
-import numpy as np
 import unittest
 import pdb
 
@@ -8,34 +7,25 @@ def squared():
     '''squared error'''
     def output(predicted, expected):
         error = predicted - expected
-        return np.dot(error, error)
+        return error * error
 
-    def gradient(predicted, expected):
-        '''gradient wrt predicted'''
-        # NOTE: Checked
-        error = predicted - expected
-        return np.array([2.0 * error])
+    def derivative(predicted, expected):
+        '''derivative wrt predicted'''
+        return 2.0 * (predicted - expected)
 
-    return gradient, output
+    return derivative, output
 
 
 class Test(unittest.TestCase):
     def test_output(self):
         _, output = squared()
-        predicted = np.array([1, 2, 3])
-        y = np.array([6, 5, 4])
-        actual = output(predicted, y)
-        expected = 25 + 9 + 1
-        self.assertEqual(actual, expected)
+        self.assertAlmostEqual(output(10, 1), 81)
+        self.assertAlmostEqual(output(1, 11), 100)
 
-    def test_gradient(self):
-        gradient, _ = squared()
-        predicted = np.array([1, 2, 3])
-        y = np.array([6, 5, 4])
-        actual = gradient(predicted, y)
-        expected = np.array([2 * -5, 2 * -3, 2 * -1])
-        diff = np.linalg.norm(actual - expected)
-        self.assertLess(diff, 1e-3)
+    def test_derivative(self):
+        derivative, _ = squared()
+        self.assertAlmostEqual(derivative(10, 1), 2 * 9)
+        self.assertAlmostEqual(derivative(1, 11), 2 * -10)
 
 
 if __name__ == '__main__':

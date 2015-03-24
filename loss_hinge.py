@@ -1,5 +1,4 @@
 '''module for hinge loss for binary classification to +1 or -1'''
-import numpy as np
 import unittest
 import pdb
 
@@ -19,14 +18,14 @@ def hinge():
         else:
             return 0.0
 
-    def gradient(predicted, expected):
-        '''gradient wrt predicted'''
+    def derivative(predicted, expected):
+        '''derivative wrt predicted'''
         if predicted * expected >= 1:
-            return np.array([0.0])
+            return 0.0
         else:
-            return np.array([-expected])
+            return -expected
 
-    return gradient, output
+    return derivative, output
 
 
 class Test(unittest.TestCase):
@@ -48,19 +47,18 @@ class Test(unittest.TestCase):
         self.assertAlmostEqual(output(1.0, +1), 0)
         self.assertAlmostEqual(output(10, +1), 0)
 
-    def test_gradient(self):
-        gradient, _ = hinge()
+    def test_derivative(self):
+        derivative, _ = hinge()
 
         def equal(actual, expected1):
-            expected = np.array([expected1])
-            diff = actual - expected
-            self.assertLess(np.linalg.norm(diff), 1e-3)
+            diff = abs(actual - expected1)
+            self.assertLess(diff, 1e-3)
 
-        equal(gradient(10, 1), 0)
-        equal(gradient(1, 1), 0)
-        equal(gradient(.5, 1), -1)
-        equal(gradient(0, 1), - 1)
-        equal(gradient(-10, 1), -1)
+        equal(derivative(10, 1), 0)
+        equal(derivative(1, 1), 0)
+        equal(derivative(.5, 1), -1)
+        equal(derivative(0, 1), - 1)
+        equal(derivative(-10, 1), -1)
 
 
 if __name__ == '__main__':
