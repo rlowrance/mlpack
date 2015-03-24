@@ -1,5 +1,4 @@
 '''module for median loss'''
-import numpy as np
 import unittest
 import pdb
 
@@ -11,38 +10,38 @@ def quantile(tau):
     def output(predicted, expected):
         '''return number'''
         # tau * (p - y) * I(y <= p) + (1- tau) * (y - p) * I(y >= p)
-        if expected <= predicted:
-            return tau * (predicted - expected)
+        negative_error = expected - predicted
+        if negative_error > 0:
+            return tau * negative_error
         else:
-            return (1 - tau) * (expected - predicted)
+            return -(1 - tau) * negative_error
 
-    def gradient(predicted, expected):
-        '''subgradient wrt predicted'''
-        raise RuntimeError('not implemented')
+    def derivative(predicted, expected):
+        '''derivate wrt predicted'''
+        negative_error = expected - predicted
+        if negative_error == 0:
+            return 0
+        elif negative_error > 0:
+            return -tau
+        else:
+            return (1 - tau)
 
-    return gradient, output
+    return derivative, output
 
 
 class Test(unittest.TestCase):
     def test_output(self):
         tau = .1
         _, output = quantile(tau)
-        self.assertAlmostEqual(output(100, 200), 90)  # predicted < expected
-        self.assertAlmostEqual(output(100, 100), 0)   # predicted == expected
-        self.assertAlmostEqual(output(100, 10), 9)    # predicted > expected
+        self.assertAlmostEqual(output(100, 10), 81)
+        self.assertAlmostEqual(output(10, 100), 9)
 
-    def test_gradient(self):
-        return
-        # check with one element so that we can use check gradient
-        # NOTE: the original implementation of output() took vectors as inputs
-        tau = .5
-        gradient, _ = quantile(tau)
-        predicted = np.array([1, 2, 3])
-        expected = np.array([6, 5, 4])
-        actual = gradient(predicted, expected)
-        expected = np.array([2 * -5, 2 * -3, 2 * -1])
-        diff = np.linalg.norm(actual - expected)
-        self.assertLess(diff, 1e-3)
+    def test_derivative(self):
+        tau = .1
+        derivative, _ = quantile(tau)
+        self.assertAlmostEqual(derivative(100, +1), .9)
+        self.assertAlmostEqual(derivative(100, -1), .9)
+        self.assertAlmostEqual(derivative(1, +1), 0)
 
 
 if __name__ == '__main__':
