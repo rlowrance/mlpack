@@ -4,16 +4,20 @@ import pdb
 
 
 def rand(d):
-    '''Generate random np.array sample of size d.
-
-    Each element is drawn uniformly from [0,1].
-    '''
+    '''Generate random np.array sample of size d drawn uniformly from [0,1]'''
     while True:
         result = np.random.rand(d)
         yield result
 
 
-class Test(unittest.TestCase):
+def randn(d, mean, var):
+    '''Generate random np.array sample of size d drawn from N(mean, var) '''
+    while True:
+        result = var * np.random.randn(d) + mean
+        yield result
+
+
+class TestRand(unittest.TestCase):
     def setUp(self):
         self.verbose = False
 
@@ -33,5 +37,42 @@ class Test(unittest.TestCase):
                 break
 
 
+class TestRandn(unittest.TestCase):
+    def setUp(self):
+        self.verbose = False
+
+    def test_generate_0_1(self):
+        mean = 0
+        var = 1
+        n = 100
+        means = np.zeros(n)
+        for i in xrange(n):
+            x = next(randn(3, mean, var))
+            means[i] = np.mean(x)
+            if self.verbose:
+                print i, x
+        actual_mean = np.mean(means)
+        if self.verbose:
+            print 'actual_means', actual_mean
+        self.assertLess(abs(mean - actual_mean), .3)
+
+    def test_generate_10_100(self):
+        mean = 10
+        var = 100
+        n = 1000
+        means = np.zeros(n)
+        for i in xrange(n):
+            x = next(randn(3, mean, var))
+            means[i] = np.mean(x)
+            if self.verbose:
+                print i, x
+        actual_mean = np.mean(means)
+        if self.verbose:
+            print 'actual_mean', actual_mean
+        self.assertLess(abs(mean - actual_mean), 3)
+
+
 if __name__ == '__main__':
+    if False:
+        pdb.set_trace()
     unittest.main()
