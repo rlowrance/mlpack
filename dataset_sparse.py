@@ -7,10 +7,11 @@ import unittest
 import random_sample
 
 
-def dataset_sparse(num_features, num_samples):
+def sparse(num_features, num_samples):
     '''return theta, x, y
 
     theta = 10 * {-10,+10} + zeros
+    Ref: ML1, Spring 2015, Hw2
     '''
     assert num_features > 10
 
@@ -46,7 +47,7 @@ class Test(unittest.TestCase):
     def test(self):
         num_features = 20
         num_samples = 100
-        theta, x, y = dataset_sparse(num_features, num_samples)
+        theta, x, y = sparse(num_features, num_samples)
         if self.verbose:
             print theta, x, y
             print theta.shape
