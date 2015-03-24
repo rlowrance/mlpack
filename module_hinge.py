@@ -8,11 +8,23 @@ def hinge():
     '''hinge loss (use for svm)'''
     def output(predicted, expected):
         '''expected is +1 or -1'''
-        return max(0, 1 - predicted * expected)
+        if expected == 1 or expected == -1:
+            pass
+        else:
+            print 'expected is not -1 or +1, as hinge loss expects', expected
+            raise RuntimeError('expected not =1 or +1, as required' + expected)
+        error = 1 - predicted * expected
+        if error > 0:
+            return error
+        else:
+            return 0.0
 
     def gradient(predicted, expected):
         '''gradient wrt predicted'''
-        raise NotImplementedError('gradient')
+        if predicted * expected >= 1:
+            return np.array([0.0])
+        else:
+            return np.array([-expected])
 
     return gradient, output
 
@@ -37,14 +49,18 @@ class Test(unittest.TestCase):
         self.assertAlmostEqual(output(10, +1), 0)
 
     def test_gradient(self):
-        return
         gradient, _ = hinge()
-        predicted = np.array([1, 2, 3])
-        y = np.array([6, 5, 4])
-        actual = gradient(predicted, y)
-        expected = np.array([2 * -5, 2 * -3, 2 * -1])
-        diff = np.linalg.norm(actual - expected)
-        self.assertLess(diff, 1e-3)
+
+        def equal(actual, expected1):
+            expected = np.array([expected1])
+            diff = actual - expected
+            self.assertLess(np.linalg.norm(diff), 1e-3)
+
+        equal(gradient(10, 1), 0)
+        equal(gradient(1, 1), 0)
+        equal(gradient(.5, 1), -1)
+        equal(gradient(0, 1), - 1)
+        equal(gradient(-10, 1), -1)
 
 
 if __name__ == '__main__':
