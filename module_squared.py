@@ -12,9 +12,9 @@ def squared():
 
     def gradient(predicted, expected):
         '''gradient wrt predicted'''
+        # NOTE: Checked
         error = predicted - expected
         return np.array([2.0 * error])
-        pass
 
     return gradient, output
 
