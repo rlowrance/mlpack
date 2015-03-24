@@ -54,7 +54,7 @@ class TestRandn(unittest.TestCase):
         actual_mean = np.mean(means)
         if self.verbose:
             print 'actual_means', actual_mean
-        self.assertLess(abs(mean - actual_mean), .3)
+        self.assertLess(abs(mean - actual_mean), .5)
 
     def test_generate_10_100(self):
         mean = 10
@@ -69,7 +69,7 @@ class TestRandn(unittest.TestCase):
         actual_mean = np.mean(means)
         if self.verbose:
             print 'actual_mean', actual_mean
-        self.assertLess(abs(mean - actual_mean), 3)
+        self.assertLess(abs(mean - actual_mean), 5)
 
 
 if __name__ == '__main__':
