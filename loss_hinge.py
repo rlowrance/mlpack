@@ -5,25 +5,24 @@ import pdb
 
 def hinge():
     '''hinge loss (use for svm)'''
-    def output(predicted, expected):
-        '''expected is +1 or -1'''
-        if expected == 1 or expected == -1:
-            pass
-        else:
-            print 'expected is not -1 or +1, as hinge loss expects', expected
-            raise RuntimeError('expected not =1 or +1, as required' + expected)
-        error = 1 - predicted * expected
+    def output(prediction, label):
+        '''label is +1 or -1'''
+        if label != 1 and label != -1:
+            raise RuntimeError('label not =1 or +1, as required: ' + str(label))
+        error = 1 - prediction * label
         if error > 0:
             return error
         else:
             return 0.0
 
-    def derivative(predicted, expected):
-        '''derivative wrt predicted'''
-        if predicted * expected >= 1:
+    def derivative(prediction, label):
+        '''derivative wrt prediction'''
+        if label != 1 and label != -1:
+            raise RuntimeError('label not =1 or +1, as required: ' + str(label))
+        if prediction * label >= 1:
             return 0.0
         else:
-            return -expected
+            return -label
 
     return derivative, output
 
