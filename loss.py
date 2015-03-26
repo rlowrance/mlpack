@@ -23,3 +23,13 @@ log = loss_log.log
 quantile = loss_quantile.quantile
 squared = loss_squared.squared
 squared_vw = loss_squared_vw.squared_vw
+
+# alternative names (mimicing vw)
+# BUT note these differences:
+# vw's classic is our squared
+# vw's squared is our squared_vw
+huber = squared
+logistic = log
+
+def absolute:
+    quantile(.5)

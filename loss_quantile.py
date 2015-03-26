@@ -7,18 +7,18 @@ def quantile(tau):
     '''quantile error'''
     assert 0 < tau < 1
 
-    def output(predicted, expected):
+    def output(prediction, label):
         '''return number'''
         # tau * (p - y) * I(y <= p) + (1- tau) * (y - p) * I(y >= p)
-        negative_error = expected - predicted
+        negative_error = label - prediction
         if negative_error > 0:
             return tau * negative_error
         else:
             return -(1 - tau) * negative_error
 
-    def derivative(predicted, expected):
-        '''derivate wrt predicted'''
-        negative_error = expected - predicted
+    def derivative(prediction, label):
+        '''derivate wrt prediction'''
+        negative_error = label - prediction
         if negative_error == 0:
             return 0
         elif negative_error > 0:

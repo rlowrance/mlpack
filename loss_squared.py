@@ -5,13 +5,13 @@ import pdb
 
 def squared():
     '''squared error'''
-    def output(predicted, expected):
-        error = predicted - expected
+    def output(prediction, label):
+        error = prediction - label
         return error * error
 
-    def derivative(predicted, expected):
-        '''derivative wrt predicted'''
-        return 2.0 * (predicted - expected)
+    def derivative(prediction, label):
+        '''derivative wrt prediction'''
+        return 2.0 * (prediction - label)
 
     return derivative, output
 
