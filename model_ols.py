@@ -1,62 +1,60 @@
 '''ordinary least squares with one prediction
 
-FUNCTIONS
-predict(theta, x)              -> predicted number
-loss(predicted, y)             -> number
-gradient_loss(x, y, predicted) -> np.array 1d, number
+FUNCTIONS returned by ols()
+gradient(thta, x, y, [prediction])) -> vector
+loss(thta, x, y, [prediction]))     -> number
+predict(theta, x)                   -> number
 
 ARGS
-predicted: number
-x        : np.array 1d
-y        : number
+prediction: np array 1d
+theta     : np array 1d
+x         : np array 1d
+y         : number
 '''
 import numpy as np
 import pdb
 import unittest
-import module
+import model
 
 
 def ols():
-    '''1 output, because ridge will allow multiple outputs'''
-    linear_gradient, linear_output = module.linear()
-    squared_gradient, squared_output = module.squared()
-
-    def gradient_loss(x, y, predicted):
-        g_squared = squared_gradient(predicted, y)
-        g_linear = linear_gradient(x)
-        g = g_linear * g_squared
-        loss = squared_output(predicted, y)
-        return g, loss
-
-    def predict(theta, x):
-        return linear_output(theta, x)
-
-    return gradient_loss, predict
+    '''ols is ridge regression with a zero weight for the regularizer'''
+    return model.ridge(0)
 
 
 class Test(unittest.TestCase):
-    def test_gradient_loss(self):
-        gradient, predict = ols()
-        theta = np.array([1, -2, 3])
-        x = np.array([-4, 5])
-        y = -6
-        predicted = predict(theta, x)
-        the_gradient, the_loss = gradient(x, y, predicted)
-        # check the_gradient
-        expected = np.array([60, -240, 300])
-        diff = np.linalg.norm(the_gradient - expected)
-        self.assertLess(diff, 1e-3)
-        # check the_loss
-        error = 1 - 2 * -4 + 3 * 5 - -6
-        self.assertEqual(the_loss, error * error)
+    # tests are copied from ridge
+    # with the modification that the regression weight is set to 0
+    def setUp(self):
+        self.theta = np.array([-1.0, 2, -3])
+        self.x = np.array([4.0, -5])
+        self.y = 6
+        self.rw = 0.1  # regularizer weight
 
     def test_predict(self):
-        _, predict = ols()
-        theta = np.array([1, -2, 3])
-        x = np.array([-4, 5])
-        predicted = predict(theta, x)
-        expected = 1 - 2 * -4 + 3 * 5
-        self.assertEqual(predicted, expected)
+        gradient, loss, predict = ols()
+        actual = predict(self.theta, self.x)
+        self.assertTrue(isinstance(actual, float))
+        expected = -1 + 2 * 4 - 3 * -5
+        self.assertAlmostEqual(actual, expected)
+
+    def test_loss(self):
+        gradient, loss, predict = ols()
+        prediction = predict(self.theta, self.x)
+        actual = loss(self.theta, self.x, self.y, prediction)
+        self.assertTrue(isinstance(actual, float))
+        expected_error = 22 - 6
+        expected_loss = expected_error * expected_error
+        self.assertAlmostEqual(actual, expected_loss)
+
+    def test_gradient(self):
+        gradient, loss, predict = ols()
+        actual = gradient(self.theta, self.x, self.y)
+        expected_error = 22 - 6
+        gradient_no_reg = np.array([1, 4, -5]) * 2 * expected_error
+        expected = gradient_no_reg
+        diff = np.linalg.norm(actual - expected)
+        self.assertLess(diff, 1e-3)
 
 
 if __name__ == '__main__':
