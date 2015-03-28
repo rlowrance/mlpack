@@ -1,68 +1,111 @@
-'''ridge regression with multiple outputs
+'''ridge regression with one output
 
-FUNCTIONS
-predict(theta, x)              -> predicted vector
-loss(predicted)                -> number
-gradient_loss(x, y, predicted) -> vector and number
+FUNCTIONS returned by ridge(regularizer_weight)
+gradient(thta, x, y, [prediction])) -> vector
+loss(thta, x, y, [prediction]))     -> number
+predict(theta, x)                   -> number
 
 ARGS
-predicted: np array 1d
-theta    : np array 1d
-x        : np array 1d
-y        : number
+prediction        : np array 1d
+regularizer_weight: number >= 0
+theta             : np array 1d
+x                 : np array 1d
+y                 : number
 '''
 import numpy as np
 import unittest
 import pdb
+
+
+import check_gradient
+import loss
 import module
+import random_sample
+import regularizer
 
 
-def ridge(num_inputs, regularizer_weight):
+def ridge(regularizer_weight):
     assert regularizer_weight >= 0
-    num_outputs = 1
-    linear_grad, linear_output = module.linear_n(num_inputs, 1)
-    squared_grad, squared_output = module.squared()
-    l2_grad, l2_output = module.l2(num_outputs)
+    linear_gradient, linear_output = module.linear()
+    squared_derivative, squared_loss = loss.squared()
+    l2_derivative, l2_loss = regularizer.l2()
+
+    def split(theta):
+        # split theta into bias and weights
+        return theta[0], theta[1:]
 
     def predict(theta, x):
         return linear_output(theta, x)
 
-    def gradient_loss(theta, x, y, prediction):
-        loss_squared = squared_output(prediction, y)
-        loss_l2 = l2_output(theta)
-        g_linear = linear_grad(x)
-        g_squared = squared_grad(prediction, y)
-        g_l2 = l2_grad(theta)
-        g = g_linear * g_squared + regularizer_weight * g_l2
-        return g, loss_squared + regularizer_weight * loss_l2
+    def loss_(theta, x, y, prediction=None):
+        b, w = split(theta)
+        if prediction is None:
+            prediction = predict(theta, x)
+        return \
+            squared_loss(prediction, y) + \
+            regularizer_weight * l2_loss(w)
 
-    return gradient_loss, predict
+    def gradient(theta, x, y, prediction=None):
+        b, w = split(theta)
+        num_biases = b.size
+        if prediction is None:
+            prediction = predict(theta, x)
+        return \
+            (linear_gradient(theta, x) * squared_derivative(prediction, y)) + \
+            regularizer_weight * l2_derivative(w, num_biases)
+
+    return gradient, loss_, predict
 
 
 class TestRidge(unittest.TestCase):
     def setUp(self):
-        self.theta = np.array([-1, 2, -3])
-        self.x = np.array([4, -5])
+        self.theta = np.array([-1.0, 2, -3])
+        self.x = np.array([4.0, -5])
         self.y = 6
         self.rw = 0.1  # regularizer weight
 
     def test_predict(self):
-        gradient_loss, predict = ridge(self.x.size, self.rw)
+        gradient, loss, predict = ridge(self.rw)
         actual = predict(self.theta, self.x)
+        self.assertTrue(isinstance(actual, float))
         expected = -1 + 2 * 4 - 3 * -5
         self.assertAlmostEqual(actual, expected)
 
-    def test_gradient_loss(self):
-        gradient_loss, predict = ridge(self.x.size, self.rw)
+    def test_loss(self):
+        gradient, loss, predict = ridge(self.rw)
         prediction = predict(self.theta, self.x)
-        gradient, loss = gradient_loss(self.theta, self.x, self.y, prediction)
+        actual = loss(self.theta, self.x, self.y, prediction)
+        self.assertTrue(isinstance(actual, float))
         expected_error = 22 - 6
         expected_loss = expected_error * expected_error + 1.3
-        self.assertAlmostEqual(loss, expected_loss)
-        expected_gradient = np.array([1, 4, -5]) * 2 * expected_error
-        eg = expected_gradient + 0.1 * np.array([0, 2 * 2, 2 * -3])
-        diff = np.linalg.norm(gradient - eg)
+        self.assertAlmostEqual(actual, expected_loss)
+
+    def test_gradient(self):
+        gradient, loss, predict = ridge(self.rw)
+        actual = gradient(self.theta, self.x, self.y)
+        expected_error = 22 - 6
+        gradient_no_reg = np.array([1, 4, -5]) * 2 * expected_error
+        gradient_reg = 2.0 * 0.1 * np.array([0, 2, -3])
+        expected = gradient_no_reg + gradient_reg
+        diff = np.linalg.norm(actual - expected)
         self.assertLess(diff, 1e-3)
+
+    def test_gradient_via_check_gradient(self):
+        def check(gradient, loss):
+            def f(theta):
+                return loss(theta, self.x, self.y)
+            def g(theta):
+                return gradient(theta, self.x, self.y)
+            for _ in xrange(100):
+                theta = next(random_sample.rand(1 + self.x.size))
+                stepsize = 1e-4
+                tolerance = 1e-3
+                ok = check_gradient.roy(f, g, theta, stepsize, tolerance)
+                self.assertTrue(ok)
+
+        for rw in (0, .001, .1):
+            gradient, loss, predict = ridge(rw)
+            check(gradient, loss)
 
 
 if __name__ == '__main__':
