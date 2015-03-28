@@ -1,9 +1,13 @@
 '''loss functions
 
-COMMOND API
+COMMON API
 function(optional_args): returns two functions
-    output(prediction, expected) -> number
-    derivative(prediction, expected) -> number
+    derivative(prediction, label) -> number
+    loss(prediction, label) -> number
+
+ARGS
+prediction: number
+label     : number
 
 Loss functions
 hinge()
@@ -12,17 +16,21 @@ quantile(tau)
 squared()
 squared_vw()
 '''
-import loss_hinge
-import loss_log
-import loss_quantile
-import loss_squared
-import loss_squared_vw
+from loss_hinge import hinge
+from loss_log import log
+from loss_quantile import quantile
+from loss_squared import squared
+from loss_squared_vw import squared_vw
 
-hinge = loss_hinge.hinge
-log = loss_log.log
-quantile = loss_quantile.quantile
-squared = loss_squared.squared
-squared_vw = loss_squared_vw.squared_vw
+
+# use all imported functions, so as to avoid an error message from pyflakes
+if False:
+    hinge()
+    log()
+    quantile()
+    squared()
+    squared_vw()
+
 
 # alternative names (mimicing vw)
 # BUT note these differences:
@@ -31,5 +39,6 @@ squared_vw = loss_squared_vw.squared_vw
 huber = squared
 logistic = log
 
-def absolute:
+
+def absolute():
     quantile(.5)
