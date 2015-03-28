@@ -1,11 +1,20 @@
-'''module for squared loss'''
+'''squared loss
+
+FUNCTIONS
+loss(prediction, label)       -> number
+derivative(prediction, label) -> number
+
+ARGS
+prediction: number
+label     : number
+'''
 import unittest
 import pdb
 
 
 def squared():
     '''squared error'''
-    def output(prediction, label):
+    def loss(prediction, label):
         error = prediction - label
         return error * error
 
@@ -13,14 +22,14 @@ def squared():
         '''derivative wrt prediction'''
         return 2.0 * (prediction - label)
 
-    return derivative, output
+    return derivative, loss
 
 
 class Test(unittest.TestCase):
-    def test_output(self):
-        _, output = squared()
-        self.assertAlmostEqual(output(10, 1), 81)
-        self.assertAlmostEqual(output(1, 11), 100)
+    def test_lioss(self):
+        _, loss = squared()
+        self.assertAlmostEqual(loss(10, 1), 81)
+        self.assertAlmostEqual(loss(1, 11), 100)
 
     def test_derivative(self):
         derivative, _ = squared()
