@@ -1,4 +1,4 @@
-'''datasets
+'''datasets: generate artificial data sets
 
 SUMMARY OF APIs
 outliers(num_features, num_unique_samples)
