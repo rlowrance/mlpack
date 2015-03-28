@@ -1,5 +1,21 @@
+'''utility functions that take numpy array's as arguments'''
 import numpy as np
 import unittest
+
+
+def random_subset(matrix, n):
+    '''pick a random subset without replacement of size n form the matrix'''
+    selected = np.random.choice(matrix.shape[0], size=n, replace=False)
+    return matrix[selected]
+
+
+class TestRandomSubset(unittest.TestCase):
+    def test(self):
+        # ref: stackoverflow at numpty-get-random-set-of-rows-from-2d-array
+        a = np.random.randint(5, size=(100, 3))
+        s = random_subset(a, 10)
+        self.assertEqual(s.shape[0], 10)
+        self.assertEqual(s.shape[1], 3)
 
 
 def almost_equal(a, b, tolerance, verbose=False):
