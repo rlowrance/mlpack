@@ -20,20 +20,15 @@ squared():
     output(predicted, expected) --> number
     gradient(predicted, expected) --> vector
 '''
-import module_l2
-l2 = module_l2.l2
+from module_linear import linear
+from module_linear_n import linear_n
+from module_negative_likelihood import negative_likelihood
+from module_softmax import softmax
 
-import module_linear
-linear = module_linear.linear
 
-import module_linear_n
-linear_n = module_linear_n.linear_n
-
-import module_negative_likelihood
-negative_likelihood = module_negative_likelihood.negative_likelihood
-
-import module_softmax
-softmax = module_softmax.softmax
-
-import module_squared
-squared = module_squared.squared
+if False:
+    # use all imports, so as to avoid an error from pyflakes
+    linear()
+    linear_n()
+    negative_likelihood()
+    softmax()
