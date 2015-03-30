@@ -17,6 +17,24 @@ def randn(d, mean, var):
         yield result
 
 
+def uniform(d, low, high):
+    '''Generate np.array 1d sample of size d drawn uniformly from [low,high]'''
+    while True:
+        result = np.random.uniform(low, high, size=d)
+        yield result
+
+
+class TestUniform(unittest.TestCase):
+    def setUp(self):
+        self.verbose = False
+
+    def test(self):
+        for i in xrange(10):
+            x = next(uniform(3, -10, 100))
+            if self.verbose:
+                print i, x
+
+
 class TestRand(unittest.TestCase):
     def setUp(self):
         self.verbose = False
