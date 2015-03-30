@@ -1,6 +1,8 @@
 # test all modules
 python Record.py
 python check_gradient.py
+python dataset_bishop_ch1.py
+python dataset_d1.py
 python dataset_outliers.py
 python dataset_sparse.py
 python features.py
@@ -11,6 +13,7 @@ python loss_log.py
 python loss_squared.py
 python loss_squared_vw.py
 python loss_quantile.py
+python minimize_1d_golden_section.py
 python model_multiclass.py
 python model_ols.py
 python model_ridge.py
