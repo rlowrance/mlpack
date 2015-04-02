@@ -1,4 +1,4 @@
-'''dataset: generate artificial data sets
+'''generate artificial data sets
 
 SUMMARY OF APIs
 bishop_ch1(num_samples)
