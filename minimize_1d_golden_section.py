@@ -2,7 +2,10 @@
 
 NOTE: the function fun is assumed to be unimodal
 
-RETURN low and high, such that the minimizer is in [low,high]
+RETURN
+low
+high, such that the minimizer is in [low,high]
+dict, dictionary with function evalutions dict[x] = f(x)
 
 ARGS
 fun(x) -> number
@@ -19,11 +22,18 @@ import unittest
 
 def golden_section(fun, low, high, tolerance, verbose=False):
     assert low < high
+    d = {}
+
+    def func(x):
+        result = fun(x)
+        d[x] = result
+        return result
+
     tau = (math.sqrt(5.0) - 1) / 2.0
     x1 = low + (1 - tau) * (high - low)
-    f1 = fun(x1)
+    f1 = func(x1)
     x2 = low + tau * (high - low)
-    f2 = fun(x2)
+    f2 = func(x2)
     while (high - low) > tolerance:
         if verbose:
             print x1, f1, x2, f2
@@ -32,14 +42,14 @@ def golden_section(fun, low, high, tolerance, verbose=False):
             x1 = x2
             f1 = f2
             x2 = low + tau * (high - low)
-            f2 = fun(x2)
+            f2 = func(x2)
         else:
             high = x2
             x2 = x1
             f2 = f1
             x1 = low + (1 - tau) * (high - low)
-            f1 = fun(x1)
-    return low, high
+            f1 = func(x1)
+    return low, high, d
 
 
 class Test(unittest.TestCase):
@@ -51,7 +61,7 @@ class Test(unittest.TestCase):
         def fun(x):
             return 0.5 - x * math.exp(- x * x)
 
-        low_star, high_star = \
+        low_star, high_star, d = \
             golden_section(fun, 0.0, 2.0, .001, verbose=self.verbose)
         if self.verbose:
             print 'low_star', low_star, 'high_star', high_star
