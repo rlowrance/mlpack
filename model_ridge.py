@@ -50,9 +50,9 @@ def ridge(regularizer_weight):
         num_biases = b.size
         if prediction is None:
             prediction = predict(theta, x)
-        return \
-            (linear_gradient(theta, x) * squared_derivative(prediction, y)) + \
-            regularizer_weight * l2_derivative(w, num_biases)
+        part1 = linear_gradient(theta, x) * squared_derivative(prediction, y)
+        part2 = regularizer_weight * l2_derivative(w, num_biases)
+        return part1 + part2
 
     return gradient, loss_, predict
 
@@ -94,8 +94,10 @@ class TestRidge(unittest.TestCase):
         def check(gradient, loss):
             def f(theta):
                 return loss(theta, self.x, self.y)
+
             def g(theta):
                 return gradient(theta, self.x, self.y)
+
             for _ in xrange(100):
                 theta = next(random_sample.rand(1 + self.x.size))
                 stepsize = 1e-4
