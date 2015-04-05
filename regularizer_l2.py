@@ -13,30 +13,6 @@ import unittest
 import pdb
 
 
-def l2OLD(num_outputs):
-    # num_outputs needed to deconstruct theta
-    # theta begins with a bias for each output
-    assert num_outputs >= 1
-
-    def split_w(theta):
-        '''weight portion of theta'''
-        # see linear%split
-        return theta[num_outputs:]
-
-    def output(theta):
-        '''sum of squared weights'''
-        w = split_w(theta)
-        return np.sum(np.dot(w, w))
-
-    def gradient(theta):
-        '''vector'''
-        grad_b = np.zeros(num_outputs)
-        grad_w = 2.0 * split_w(theta)
-        return np.hstack((grad_b, grad_w))
-
-    return gradient, output
-
-
 def l2():
     def gradient(w, num_biases):
         return np.hstack((np.zeros(num_biases), 2.0 * w))
