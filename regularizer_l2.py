@@ -1,8 +1,8 @@
 '''l2 regularizer
 
 FUNCTIONS
-loss(w)           -> number
-derivative(theta) -> number
+loss(w)         -> number
+gradient(theta) -> numpy array 1d
 
 ARGS
 theta: np array 1d, the entire set of parameters
@@ -38,13 +38,13 @@ def l2OLD(num_outputs):
 
 
 def l2():
+    def gradient(w, num_biases):
+        return np.hstack((np.zeros(num_biases), 2.0 * w))
+
     def loss(w):
         return np.sum(np.dot(w, w))
 
-    def derivative(w, num_biases):
-        return np.hstack((np.zeros(num_biases), 2.0 * w))
-
-    return derivative, loss
+    return gradient, loss
 
 
 class Test(unittest.TestCase):
@@ -55,15 +55,15 @@ class Test(unittest.TestCase):
         _, loss = l2()
         self.assertAlmostEqual(loss(self.w), 14.0)
 
-    def test_derivative(self):
-        derivative, _ = l2()
+    def test_gradient(self):
+        gradient, _ = l2()
         # 2 biases
-        actual = derivative(self.w, 2)
+        actual = gradient(self.w, 2)
         expected = np.array([0.0, 0, 2, 4, 6])
         diff = np.linalg.norm(actual - expected)
         self.assertLess(diff, 1e-3)
         # 0 biases
-        actual = derivative(self.w, 0)
+        actual = gradient(self.w, 0)
         expected = np.array([2.0, 4, 6])
         diff = np.linalg.norm(actual - expected)
         self.assertLess(diff, 1e-3)
