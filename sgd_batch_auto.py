@@ -1,10 +1,23 @@
-'''auto-tuning batch sgd'''
+'''auto-tuning batch sgd
+
+ARGS
+regularizer_weight: number
+theta0            : vector
+train_x           : matrix
+train_y           : vector
+validate_x        : matrix
+validate_y        : vector
+alpha0_subset_set : number, num samples from train_x used to select initial
+                    learning rate
+
+RETURN
+theta_star        : vector, optimal
+'''
 import math
 import numpy as np
 import unittest
 import pdb
 import warnings
-
 
 import check_gradient
 import dataset
@@ -170,9 +183,10 @@ def no_change_in_long_time(vl_list, tolerance):
     return diff < tolerance
 
 
-def sgd_auto(regularizer_weight, theta0,
-             train_x, train_y, validate_x, validate_y,
-             alpha0_subset_size):
+def sgd_batch_auto(regularizer_weight, theta0,
+                   train_x, train_y, validate_x, validate_y,
+                   alpha0_subset_size,
+                   verbose=False):
     '''autofit sgd for ridge regression
 
     IDEA 1
@@ -197,7 +211,6 @@ def sgd_auto(regularizer_weight, theta0,
     NOTE: The features in train_x, validate_x should be normlized, as we
           don't rescale them.
     '''
-    verbose = False
     gradient, loss, predict = model.ridge(regularizer_weight)
     num_samples = train_x.shape[0]
 
@@ -237,13 +250,14 @@ def sgd_auto(regularizer_weight, theta0,
     tolerance = .01
     t = 0
     epoch_num = 0
-    verbose_epoch = True
+    if verbose:
+        print 'epoch,loss train,loss validate, theta'
     while True:
         epoch_num += 1
         theta, t = epoch(alpha0, theta, t)
         tl = loss_mean(theta, train_x, train_y, loss)
         vl = loss_mean(theta, validate_x, validate_y, loss)
-        if verbose_epoch:
+        if verbose:
             print epoch_num, tl, vl, theta
         all_training_losses.append(tl)
         all_validation_losses.append(vl)
@@ -331,9 +345,9 @@ class Test(unittest.TestCase):
         # regularizer_weight = 0.0
 
         theta0 = np.zeros(num_dimensions + 1)
-        theta_star = sgd_auto(regularizer_weight, theta0,
-                              train_x, train_y, validate_x, validate_y,
-                              int(num_train * .1))
+        theta_star = sgd_batch_auto(regularizer_weight, theta0,
+                                    train_x, train_y, validate_x, validate_y,
+                                    int(num_train * .1))
         if verbose:
             print 'theta_star', theta_star
         diff = np.linalg.norm(theta_actual - theta_star)
