@@ -1,10 +1,14 @@
 '''multiclass classification model
 
+TODO: revise to split gradient_loss into gradient() and loss()
+
 FUNCTIONS
-gradient()
-output()
+gradient_loss()
+predict()
 
 ARGS
+num_inputs : number
+num_classes: number
 '''
 import numpy as np
 import unittest
