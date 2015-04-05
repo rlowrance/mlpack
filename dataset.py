@@ -5,6 +5,10 @@ bishop_ch1(num_samples)
 d1(fun, num_samples, x_low, x_high, error_mean, error_variance)
 outliers(num_features, num_unique_samples)
 sparse(num_features, num_samples)
+
+ALL RETURN
+x: nparray 2d
+y: nparray 1d
 '''
 from dataset_bishop_ch1 import bishop_ch1
 from dataset_d1 import d1
