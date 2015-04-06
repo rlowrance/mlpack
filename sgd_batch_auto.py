@@ -2,6 +2,8 @@
 
 ARGS
 regularizer_weight: number
+gradient          : function(theta, ...) -> vector
+loss              : function(theta, x, y) -> number
 theta0            : vector
 train_x           : matrix
 train_y           : vector
@@ -9,9 +11,12 @@ validate_x        : matrix
 validate_y        : vector
 alpha0_subset_set : number, num samples from train_x used to select initial
                     learning rate
+tolerance         : number, declare convergence if validation error decreases
+                    by less than this amount
+verbose           : boolean, default False
 
 RETURN
-theta_star        : vector, optimal
+theta_star        : vector, optimal parameters
 '''
 import math
 import numpy as np
@@ -20,7 +25,6 @@ import pdb
 import warnings
 
 import check_gradient
-import dataset
 import minimize_1d
 import model
 import python_utilities as pu
@@ -183,9 +187,17 @@ def no_change_in_long_time(vl_list, tolerance):
     return diff < tolerance
 
 
-def sgd_batch_auto(regularizer_weight, theta0,
+def is_decreasing(a_list):
+    for i in xrange(1, len(a_list)):
+        if a_list[i] > a_list[i - 1]:
+            return False
+    return True
+
+
+def sgd_batch_auto(regularizer_weight, gradient, loss, theta0,
                    train_x, train_y, validate_x, validate_y,
                    alpha0_subset_size,
+                   tolerance=0.01,
                    verbose=False):
     '''autofit sgd for ridge regression
 
@@ -211,11 +223,12 @@ def sgd_batch_auto(regularizer_weight, theta0,
     NOTE: The features in train_x, validate_x should be normlized, as we
           don't rescale them.
     '''
-    gradient, loss, predict = model.ridge(regularizer_weight)
+    pdb.set_trace()
+    # gradient, loss, predict = model.ridge(regularizer_weight)
     num_samples = train_x.shape[0]
 
     # select random sample of train data on which to set initial learning rate
-    subset_indices = np.random.choice(alpha0_subset_size,
+    subset_indices = np.random.choice(num_samples,
                                       size=alpha0_subset_size,
                                       replace=False)
 
@@ -241,28 +254,40 @@ def sgd_batch_auto(regularizer_weight, theta0,
         for i in xrange(num_samples):
             t += 1
             alpha = next_alpha(alpha0, t)
+            # alpha = alpha * 0.01
             theta = theta - alpha * gradient(theta, train_x[i], train_y[i])
         return theta, t
 
     theta = theta0
     all_training_losses = []
     all_validation_losses = []
-    tolerance = .01
+    tolerance = .00001  # decrease in validation loss considered significant
     t = 0
     epoch_num = 0
     if verbose:
-        print 'epoch,loss train,loss validate, theta'
+        print 'epoch,loss train,loss validate, norm(theta), theta'
     while True:
         epoch_num += 1
+        pdb.set_trace()
         theta, t = epoch(alpha0, theta, t)
         tl = loss_mean(theta, train_x, train_y, loss)
         vl = loss_mean(theta, validate_x, validate_y, loss)
         if verbose:
-            print epoch_num, tl, vl, theta
+            print epoch_num, tl, vl, np.linalg.norm(theta)
+            # print epoch_num, tl, vl, np.linalg.norm(theta), theta
+        if tl != tl or vl != vl:
+            print 'nan found'
+            pdb.set_trace()
         all_training_losses.append(tl)
         all_validation_losses.append(vl)
-        # assert is_decreasing(all_training_losses)
+
+        if not is_decreasing(all_training_losses):
+            print 'training losses are not decreasing'
+            print all_training_losses
+            pdb.set_trace()
+
         if no_change_in_long_time(all_validation_losses, tolerance):
+            pdb.set_trace()
             break
     if verbose:
         print 'final theta', theta
@@ -274,16 +299,9 @@ class Test(unittest.TestCase):
         np.random.seed(123)
         self.debugging = True
 
-    @unittest.skip('')
-    def test_bishop_ch1(self):
-        # test using dataset from Bishop-06 Chapter 1
-        num_train_samples = 10000
-        num_validate_samples = 100
-        train_x, train_y = dataset.bishop(num_train_samples)
-        validate_x, validate_y = dataset.bishop(num_validate_samples)
-
     def generate_data(self,
-                      num_train, num_validate, num_dimensions, error_variance):
+                      num_train, num_validate, num_dimensions, error_variance,
+                      predict):
         def make_xsys(num_samples, num_dimensions, theta, predict):
             xs = np.zeros((num_samples, num_dimensions))
             ys = np.zeros(num_samples)
@@ -296,7 +314,6 @@ class Test(unittest.TestCase):
                 ys[s] = predict(theta, sample) + error
             return xs, ys
 
-        _, _, predict = model.ridge(regularizer_weight=0)
         theta = np.zeros(num_dimensions + 1)
         abs_value = 1
         sign = 1
@@ -310,7 +327,7 @@ class Test(unittest.TestCase):
         validate_x, validate_y = make_xsys(num_validate, num_dimensions,
                                            theta, predict)
 
-        return theta, train_x, train_y, validate_x, validate_y, predict
+        return theta, train_x, train_y, validate_x, validate_y
 
     def bayes_rmse(self, theta, xs, ys, predict):
         # lowest achievable error (which is from using the true theta
@@ -329,11 +346,15 @@ class Test(unittest.TestCase):
         num_validate = 100
         num_dimensions = 3
         error_variance = 1e-2
-        theta_actual, train_x, train_y, validate_x, validate_y, predict = \
+        l1 = 0.0
+        l2 = 0.001
+        gradient, loss, predict = model.linear(l1, l2)
+        theta_actual, train_x, train_y, validate_x, validate_y = \
             self.generate_data(num_train,
                                num_validate,
                                num_dimensions,
-                               error_variance)
+                               error_variance,
+                               predict)
 
         if verbose:
             print 'theta actual', theta_actual
@@ -341,11 +362,12 @@ class Test(unittest.TestCase):
             print 'bayes RMSE', self.bayes_rmse(theta_actual,
                                                 train_x, train_y,
                                                 predict)
-        regularizer_weight = 0.001
-        # regularizer_weight = 0.0
 
         theta0 = np.zeros(num_dimensions + 1)
-        theta_star = sgd_batch_auto(regularizer_weight, theta0,
+        theta_star = sgd_batch_auto(l1 + l2,
+                                    gradient,
+                                    loss,
+                                    theta0,
                                     train_x, train_y, validate_x, validate_y,
                                     int(num_train * .1))
         if verbose:
